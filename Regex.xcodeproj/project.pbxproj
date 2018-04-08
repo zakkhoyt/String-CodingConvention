@@ -29,6 +29,7 @@
 		C6D82D9E2079B385008AA498 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		C6D82DA52079E414008AA498 /* String+CodingConvention.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+CodingConvention.swift"; sourceTree = "<group>"; };
 		C6D82DA72079E41E008AA498 /* StringConventionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringConventionTests.swift; sourceTree = "<group>"; };
+		C6D82DA92079E834008AA498 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -45,6 +46,7 @@
 		C6D82D922079B384008AA498 = {
 			isa = PBXGroup;
 			children = (
+				C6D82DA92079E834008AA498 /* README.md */,
 				C6D82D9D2079B385008AA498 /* Regex */,
 				C6D82D9C2079B385008AA498 /* Products */,
 			);
