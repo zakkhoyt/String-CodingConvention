@@ -1,8 +1,8 @@
 ## String+CodingConvention.swift
 
-A regex based Swift string extension for converting strings between coding conventions or from coding convention to a sentance.
+A regex powered string extension for converting strings from one coding conventions to another, or converting from coding convention to a sentance/title.
 
-Useful for populating UIKit components with JSON keys. 
+This extension is wseful for populating UIKit components with JSON keys. 
 
 For example: A UILabel reads "Recognised as an Element By" as poplated from a dictionary key: "recognisedAsAnElementBy"
 
