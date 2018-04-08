@@ -1,6 +1,10 @@
 ## String+CodingConvention.swift
 
-Swift String extension for converting between coding conventions. e.g. snakeToCamel, camelToSnake, snakeToSentence, camelToSentence.
+A regex based Swift string extension for converting strings between coding conventions or from coding convention to a sentance.
+
+Useful for populating UIKit components with JSON keys. 
+
+For example: A UILabel reads "Recognised as an Element By" as poplated from a dictionary key: "recognisedAsAnElementBy"
 
 ## Functions
 
