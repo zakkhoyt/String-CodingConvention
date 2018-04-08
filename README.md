@@ -3,8 +3,9 @@
 Swift String extension for converting between coding conventions. e.g. snakeToCamel, camelToSnake, snakeToSentence, camelToSentence.
 
 ## Functions
+
+### The fun stuff
 ````
-// The fun stuff
 extension String {
     func camelToSnake() -> String 
     func snakeToCamel() -> String 
@@ -14,8 +15,9 @@ extension String {
     func lowerCasePrepisitions() -> String     
 
 }
-
-// Helper functions
+````
+### Helper functions
+````
 extension String {
     // A block based find/replace function based on regex pattern input
     func regexReplace(pattern: String, replace: RegexReplacement) -> String 
@@ -29,21 +31,25 @@ extension String {
 
 ````
 // Camel to snake
-let camel = "myCamelVariable"
-let snake = camel.camelToSnake() // my_camel_variable
-
+let foo = "myCamelVariable"
+let snake = foo.camelToSnake() // my_camel_variable
+````
+````
 // Camal to sentence
-let camel = "myCamelVariableAtDinner"
-let sentence = camel.camelToSentance() // My Camel Variable At Dinner
+let foo = "myCamelVariableAtDinner"
+let sentence = foo.camelToSentance() // My Camel Variable At Dinner
 let properSentence = sentence.lowerCasePrepisitions() // My Camel Variable at Dinner
-
+````
+````
 // Snake to camel
-let snake = "my_snake_variable"
-let camel = snake.snakeToCamel() // mySnakeVariable
-
+let foo = "my_snake_variable"
+let camel = foo.snakeToCamel() // mySnakeVariable
+````
+````
 // Snake to sentence
-let snake = "my_camel_variable_at_dinner"
-let sentence = snake.snakeToSentance()() // My Camel Variable At Dinner
+let foo = "my_camel_variable_at_dinner"
+let sentence = foo.snakeToSentance() // My Camel Variable At Dinner
 let properSentence = sentence.lowerCasePrepisitions() // My Camel Variable at Dinner
+
 ````
 
