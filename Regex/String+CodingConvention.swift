@@ -7,12 +7,21 @@
 
 import Foundation
 
+// snake to camel
+//  :%s:\(_\)\([a-z]\):\U\2:g
+// camel to snake
+//  %s:\([a-z]\)\([A-Z]\):\L\1_\2:g
+// Snake to sentence (but last work remains lower cased)
+//  %s:\([a-z]*\)_:\L\u\1 :g
+//  2a. %s:\([a-z]*\):\L\u\1:g
+//  2b. %s:_: :g
+
 // Convert coding conventions from one to another or to a sentence suitable for
 // presentation in a UI
 extension String {
-
+    
     func camelToSnake() -> String {
-        return self.regexReplace(pattern: "[a-z][A-Z]?", replace: { (toReplace) -> String in
+        return try! self.regexReplace(pattern: "[a-z][A-Z]?", replace: { (index, toReplace) -> String in
             // We now have a lower case letter followed by
             // an upper case letter "lU". Insert a space between
             // them and apply to working copy
@@ -26,15 +35,15 @@ extension String {
     }
     
     func snakeToCamel() -> String {
-        return self.regexReplace(pattern: "_[a-z]", replace: { (toReplace) -> String in
+        return try! self.regexReplace(pattern: "_[a-z]", replace: { (index, toReplace) -> String in
             var replaceWith = toReplace.replacingOccurrences(of: "_", with: "")
             replaceWith = replaceWith.uppercased()
             return replaceWith
         })
     }
-
+    
     func camelToSentance() -> String {
-        return self.regexReplace(pattern: "[a-z][A-Z]", replace: { (toReplace) -> String in
+        return try! self.regexReplace(pattern: "[a-z][A-Z]", replace: { (index, toReplace) -> String in
             // We now have a lower case letter followed by
             // an upper case letter "lU". Insert a space between
             // them and apply to working copy
@@ -46,54 +55,88 @@ extension String {
             return replaceWith
         }).capitalized
     }
-
+    
     func snakeToSentance() -> String {
-        return self.regexReplace(pattern: "_[a-z]", replace: { (toReplace) -> String in
+        return try! self.regexReplace(pattern: "_[a-z]", replace: { (index, toReplace) -> String in
             var replaceWith = toReplace.replacingOccurrences(of: "_", with: " ")
             replaceWith = replaceWith.uppercased()
             return replaceWith
         }).capitalized
     }
-
+    
     func removeParenthesis() -> String {
-        return self.regexReplace(pattern: "\\(.\\)", replace: { (toReplace) -> String in
+        return try! self.regexReplace(pattern: "\\(.\\)", replace: { (index, toReplace) -> String in
             var replaceWith = toReplace
             replaceWith = replaceWith.replacingOccurrences(of: "(", with: "")
             replaceWith = replaceWith.replacingOccurrences(of: ")", with: "")
             return replaceWith
         })
     }
-
+    
     func lowerCasePrepisitions() -> String {
-        return self.regexReplace(pattern: " [A-z][a-z] ", replace: { (toReplace) -> String in
+        return try! self.regexReplace(pattern: " [A-z][a-z] ", replace: { (index, toReplace) -> String in
             let replaceWith = toReplace.lowercased()
             return replaceWith
         })
     }
     
-    typealias RegexReplacement = (String) -> String
+    private typealias Replacement = (range: Range<String.Index>, replaceWith: String)
+    
     /// A block based find/replace function.
     /// Input a regex pattern
     /// replace closure may be called multiple times (once for each occurance)
     /// Implementation of replace is responsible for the actual replacement
-    func regexReplace(pattern: String, replace: RegexReplacement) -> String {
-        let regex = try! NSRegularExpression(pattern: pattern)
-        let matches = regex.matches(in: self, range: NSRange(0..<self.utf16.count))
-        var working = self
-        for _ in 0..<matches.count {
-            let matches = regex.matches(in: working, range: NSRange(0..<working.utf16.count))
-            guard let match = matches.first else {
-                continue
+    typealias RegexReplacement = (_ index: Int, _ toReplace: String) -> String
+    func regexReplace(pattern: String, replace: RegexReplacement) throws -> String {
+        do {
+            let regex = try NSRegularExpression(pattern: pattern)
+            var replacements: [Replacement] = []
+            let matches = regex.matches(in: self, range: NSRange(0..<self.utf16.count))
+            for (index, match) in matches.reversed().enumerated() {
+                let range = self.range(nsRange: match.range)
+                let toReplace = String(self[range])
+                let replaceWith = replace(index, toReplace)
+                let tuple = Replacement(range, replaceWith)
+                replacements.append(tuple)
+                
             }
-            let range = working.range(nsRange: match.range)
-            let toReplace = String(working[range])
-            
-            let replaceWith = replace(toReplace)
-            working.replaceSubrange(range, with: replaceWith)
+            var working = self
+            for replacement in replacements {
+                working.replaceSubrange(replacement.range, with: replacement.replaceWith)
+            }
+            return working
+        } catch {
+            throw error
         }
-        return working
     }
-
+    
+    typealias RegexCaptureGroup = (_ captureGroupIndex: Int, _ toReplace: String) -> String
+    func regexReplace(pattern: String, replaceCaptureGroup: RegexCaptureGroup) throws -> String {
+        do {
+            let regex = try NSRegularExpression(pattern: pattern)
+            var replacements: [Replacement] = []
+            regex.matches(in: self, range: NSRange(0..<self.utf16.count)).forEach { (match) in
+                // Build list in reverse
+                for r in stride(from: match.numberOfRanges - 1, to: 0, by: -1) {
+                    let nsRange = match.range(at: r)
+                    let range = self.range(nsRange: nsRange)
+                    let toReplace = String(self[range])
+                    let replaceWith = replaceCaptureGroup(r, toReplace)
+                    let tuple = Replacement(range, replaceWith)
+                    replacements.append(tuple)
+                }
+            }
+            
+            var working = self
+            for replacement in replacements {
+                working.replaceSubrange(replacement.range, with: replacement.replaceWith)
+            }
+            return working
+        } catch {
+            throw error
+        }
+        
+    }
 }
 
 // Helper functions
