@@ -7,21 +7,11 @@
 
 import Foundation
 
-// snake to camel
-//  :%s:\(_\)\([a-z]\):\U\2:g
-// camel to snake
-//  %s:\([a-z]\)\([A-Z]\):\L\1_\2:g
-// Snake to sentence (but last work remains lower cased)
-//  %s:\([a-z]*\)_:\L\u\1 :g
-//  2a. %s:\([a-z]*\):\L\u\1:g
-//  2b. %s:_: :g
-
 // Convert coding conventions from one to another or to a sentence suitable for
 // presentation in a UI
 extension String {
-    
     func camelToSnake() -> String {
-        return try! self.regexReplace(pattern: "[a-z][A-Z]?", replace: { (index, toReplace) -> String in
+        return try! self.regexReplacePattern(pattern: "[a-z][A-Z]?", replace: { (index, toReplace) -> String in
             // We now have a lower case letter followed by
             // an upper case letter "lU". Insert a space between
             // them and apply to working copy
@@ -35,7 +25,7 @@ extension String {
     }
     
     func snakeToCamel() -> String {
-        return try! self.regexReplace(pattern: "_[a-z]", replace: { (index, toReplace) -> String in
+        return try! self.regexReplacePattern(pattern: "_[a-z]", replace: { (index, toReplace) -> String in
             var replaceWith = toReplace.replacingOccurrences(of: "_", with: "")
             replaceWith = replaceWith.uppercased()
             return replaceWith
@@ -43,7 +33,7 @@ extension String {
     }
     
     func camelToSentance() -> String {
-        return try! self.regexReplace(pattern: "[a-z][A-Z]", replace: { (index, toReplace) -> String in
+        return try! self.regexReplacePattern(pattern: "[a-z][A-Z]", replace: { (index, toReplace) -> String in
             // We now have a lower case letter followed by
             // an upper case letter "lU". Insert a space between
             // them and apply to working copy
@@ -57,7 +47,7 @@ extension String {
     }
     
     func snakeToSentance() -> String {
-        return try! self.regexReplace(pattern: "_[a-z]", replace: { (index, toReplace) -> String in
+        return try! self.regexReplacePattern(pattern: "_[a-z]", replace: { (index, toReplace) -> String in
             var replaceWith = toReplace.replacingOccurrences(of: "_", with: " ")
             replaceWith = replaceWith.uppercased()
             return replaceWith
@@ -65,7 +55,7 @@ extension String {
     }
     
     func removeParenthesis() -> String {
-        return try! self.regexReplace(pattern: "\\(.\\)", replace: { (index, toReplace) -> String in
+        return try! self.regexReplacePattern(pattern: "\\(.\\)", replace: { (index, toReplace) -> String in
             var replaceWith = toReplace
             replaceWith = replaceWith.replacingOccurrences(of: "(", with: "")
             replaceWith = replaceWith.replacingOccurrences(of: ")", with: "")
@@ -74,20 +64,24 @@ extension String {
     }
     
     func lowerCasePrepisitions() -> String {
-        return try! self.regexReplace(pattern: " [A-z][a-z] ", replace: { (index, toReplace) -> String in
+        return try! self.regexReplacePattern(pattern: " [A-z][a-z] ", replace: { (index, toReplace) -> String in
             let replaceWith = toReplace.lowercased()
             return replaceWith
         })
     }
-    
+}
+
+// Extension for regex find/replace
+extension String {
     private typealias Replacement = (range: Range<String.Index>, replaceWith: String)
     
     /// A block based find/replace function.
     /// Input a regex pattern
-    /// replace closure may be called multiple times (once for each occurance)
+    /// Replace closure may be called multiple times (once for each occurance)
     /// Implementation of replace is responsible for the actual replacement
+    /// Thows on invalid regex pattern
     typealias RegexReplacement = (_ index: Int, _ toReplace: String) -> String
-    func regexReplace(pattern: String, replace: RegexReplacement) throws -> String {
+    func regexReplacePattern(pattern: String, replace: RegexReplacement) throws -> String {
         do {
             let regex = try NSRegularExpression(pattern: pattern)
             var replacements: [Replacement] = []
@@ -109,9 +103,14 @@ extension String {
             throw error
         }
     }
-    
+
+    /// A block based find/replace function.
+    /// Input a regex pattern capture groups
+    /// Replace closure may be called multiple times (once for each capture group occurance)
+    /// Implementation of replace is responsible for the actual replacement
+    /// Thows on invalid regex pattern
     typealias RegexCaptureGroup = (_ captureGroupIndex: Int, _ toReplace: String) -> String
-    func regexReplace(pattern: String, replaceCaptureGroup: RegexCaptureGroup) throws -> String {
+    func regexReplaceCaptureGroups(pattern: String, replaceCaptureGroup: RegexCaptureGroup) throws -> String {
         do {
             let regex = try NSRegularExpression(pattern: pattern)
             var replacements: [Replacement] = []
@@ -126,7 +125,6 @@ extension String {
                     replacements.append(tuple)
                 }
             }
-            
             var working = self
             for replacement in replacements {
                 working.replaceSubrange(replacement.range, with: replacement.replaceWith)
@@ -135,11 +133,10 @@ extension String {
         } catch {
             throw error
         }
-        
     }
 }
 
-// Helper functions
+// Range/NSRange helper functions
 extension String {
     func substring(nsRange: NSRange) -> String {
         return String(self[self.range(nsRange: nsRange)])
@@ -161,6 +158,4 @@ extension String {
         let end = index(startIndex, offsetBy: range.upperBound)
         return String(self[start..<end])
     }
-    
-    
 }

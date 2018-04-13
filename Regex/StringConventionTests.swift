@@ -77,7 +77,7 @@ func test() {
         print("*** Testing regexReplace:pattern:regexReplacement with pattern: \(pattern)")
         for property in snakeStrings {
             do {
-                let converted = try property.regexReplace(pattern: pattern, replace: { (index, toReplace) -> String in
+                let converted = try property.regexReplacePattern(pattern: pattern, replace: { (index, toReplace) -> String in
                     let output = "(" + toReplace.uppercased() + ")"
                     return output
                 })
@@ -93,9 +93,12 @@ func test() {
         print("*** Testing regexReplace:pattern:regexCaptureGroup with pattern: \(pattern)")
         for property in snakeStrings {
             do {
-                let converted = try property.regexReplace(pattern: pattern, replace: { (index, toReplace) -> String in
-                    let output = "(" + toReplace.uppercased() + ")"
-                    return output
+                let converted = try property.regexReplaceCaptureGroups(pattern: pattern, replaceCaptureGroup: { (index, toReplace) -> String in
+                    if index % 2 == 0 {
+                        return "(" + "<redacted>" + ")"
+                    } else {
+                        return "(" + toReplace.uppercased() + ")"
+                    }
                 })
                 print("\t\(property)\n\t\(converted)")
             } catch {
@@ -103,4 +106,6 @@ func test() {
             }
         }
     }
+    
+
 }
